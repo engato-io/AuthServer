@@ -128,6 +128,5 @@ namespace WebApp.Controllers
 
             return ticket;
         }
-
     }
 }

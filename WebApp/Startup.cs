@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using WebApp.Models;
 using AspNet.Security.OpenIdConnect.Primitives;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace WebApp
 {
@@ -49,7 +51,9 @@ namespace WebApp
                 options.SetRefreshTokenLifetime(TimeSpan.FromMinutes(2));
                 options.DisableHttpsRequirement();
                 options.UseJsonWebTokens();
-                options.AddEphemeralSigningKey();
+                //options.AddEphemeralSigningKey();
+                //options.AddSigningKey(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.Get<AppOptions>().Jwt.SecretKey)));)
+                options.AddSigningKey(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:SigningKey"])));
             });
         }
 
@@ -66,6 +70,7 @@ namespace WebApp
             {
                 Authority="http://localhost:5000",
                 Audience="resource_server",
+                
                 RequireHttpsMetadata = false,
                 TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
