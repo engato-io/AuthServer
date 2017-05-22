@@ -13,21 +13,26 @@ using AspNet.Security.OpenIdConnect.Server;
 using System.Security.Claims;
 using AspNet.Security.OpenIdConnect.Extensions;
 using OpenIddict.Core;
+using Microsoft.Extensions.Options;
 
 namespace WebApp.Controllers
 {
     public class AuthorizeController : Controller
     {
         readonly TESTContext _context;
+        private readonly AppSettings _settings;
 
-        public AuthorizeController(TESTContext context)
+        public AuthorizeController(TESTContext context, IOptions<AppSettings> settings)
         {
             _context = context;
+            _settings = settings.Value;
         }
 
         [HttpPost("~/connect/token"), Produces("application/json")]
         public async Task<IActionResult> Exchange(OpenIdConnectRequest request)
         {
+            string alfa = _settings.Jwt.Issuer;
+
             if (request.IsPasswordGrantType())
             {
                 var user = _context.Person.SingleOrDefault(x => x.PersonId == int.Parse(request.Username));

@@ -33,11 +33,13 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
+            services.AddOptions();
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+
             services.AddMvc();
             services.AddDbContext<Models.TESTContext>(options =>
             {
-                options.UseSqlServer(Configuration["Data:ConnectionString"]);
+                options.UseSqlServer(Configuration["AppSettings:ConnectionString"]);
                 options.UseOpenIddict();
             });
 
@@ -50,10 +52,8 @@ namespace WebApp
                 options.SetAccessTokenLifetime(TimeSpan.FromMinutes(1));
                 options.SetRefreshTokenLifetime(TimeSpan.FromMinutes(2));
                 options.DisableHttpsRequirement();
-                options.UseJsonWebTokens();
-                //options.AddEphemeralSigningKey();
-                //options.AddSigningKey(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.Get<AppOptions>().Jwt.SecretKey)));)
-                options.AddSigningKey(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["JWT:SigningKey"])));
+                options.UseJsonWebTokens();                
+                options.AddSigningKey(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["AppSettings:Jwt:SigningKey"])));
             });
         }
 
@@ -68,9 +68,9 @@ namespace WebApp
 
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {
-                Authority="http://localhost:5000",
-                Audience="resource_server",
-                
+                Authority = Configuration["AppSettings:Jwt:Issuer"],
+                Audience = Configuration["AppSettings:Jwr:Audience"],
+
                 RequireHttpsMetadata = false,
                 TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
