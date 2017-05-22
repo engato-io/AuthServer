@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -66,16 +63,21 @@ namespace WebApp
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
             JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
 
+            string Authority = Configuration["AppSettings:Jwt:Issuer"];
+            string Audience = Configuration["AppSettings:Jwt:Audience"];
+
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {
                 Authority = Configuration["AppSettings:Jwt:Issuer"],
-                Audience = Configuration["AppSettings:Jwr:Audience"],
+                Audience = Configuration["AppSettings:Jwt:Audience"],
 
                 RequireHttpsMetadata = false,
-                TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = OpenIdConnectConstants.Claims.Subject,
-                    RoleClaimType = OpenIdConnectConstants.Claims.Role
+                    RoleClaimType = OpenIdConnectConstants.Claims.Role,
+
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["AppSettings:Jwt:SigningKey"]))
                 }
             });
 

@@ -111,7 +111,7 @@ namespace WebApp.Controllers
                     OpenIddictConstants.Scopes.Roles
                 }.Intersect(request.GetScopes()));
 
-                ticket.SetResources("resource-server");
+                ticket.SetResources("resource_server");
 
                 foreach(var claim in ticket.Principal.Claims)
                 {
