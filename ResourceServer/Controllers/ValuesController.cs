@@ -12,7 +12,7 @@ namespace WebApi.Controllers
     [Route("api/[controller]")]
     public class ValuesController : Controller
     {
-        [Authorize, HttpGet("api/Test")]
+        [Authorize, HttpGet("TestMessage")]
         public IActionResult TestMessage()
         {
             try
