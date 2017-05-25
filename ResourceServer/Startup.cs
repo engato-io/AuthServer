@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using WebApp.Models;
-using AspNet.Security.OpenIdConnect.Primitives;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using AspNet.Security.OpenIdConnect.Primitives;
 using System.Text;
 
-namespace WebApp
+namespace WebApi
 {
     public class Startup
     {
@@ -30,41 +31,32 @@ namespace WebApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddOptions();
-            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+            services.AddCors();
 
+            var policy = new Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy();
+
+            policy.Headers.Add("*");
+            policy.Methods.Add("*");
+            policy.Origins.Add("*");
+            policy.SupportsCredentials = true;
+
+            services.AddCors(x => x.AddPolicy("corsGlobalPolicy", policy));
+
+            // Add framework services.
             services.AddMvc();
-            services.AddDbContext<Models.TESTContext>(options =>
-            {
-                options.UseSqlServer(Configuration["AppSettings:ConnectionString"]);
-                options.UseOpenIddict();
-            });
 
-            services.AddOpenIddict(options =>
-            {
-                options.AddEntityFrameworkCoreStores<TESTContext>();
-                options.AddMvcBinders();
-                options.EnableTokenEndpoint("/connect/token");
-                options.AllowPasswordFlow().AllowRefreshTokenFlow();
-                options.SetAccessTokenLifetime(TimeSpan.FromMinutes(1));
-                options.SetRefreshTokenLifetime(TimeSpan.FromMinutes(2));
-                options.DisableHttpsRequirement();
-                options.UseJsonWebTokens();                
-                options.AddSigningKey(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["AppSettings:Jwt:SigningKey"])));
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            app.UseDeveloperExceptionPage();
-            app.UseOpenIddict();
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            loggerFactory.AddDebug();
+
+            app.UseCors("corsGlobalPolicy");
 
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
             JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
-
-            string Authority = Configuration["AppSettings:Jwt:Issuer"];
-            string Audience = Configuration["AppSettings:Jwt:Audience"];
 
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {
@@ -72,20 +64,18 @@ namespace WebApp
                 Audience = Configuration["AppSettings:Jwt:Audience"],
 
                 RequireHttpsMetadata = false,
+                
                 TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = OpenIdConnectConstants.Claims.Subject,
                     RoleClaimType = OpenIdConnectConstants.Claims.Role,
 
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["AppSettings:Jwt:SigningKey"]))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["AppSettings:Jwt:SigningKey"])),
+                    ClockSkew = TimeSpan.Zero
                 }
             });
 
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
-            app.UseMvcWithDefaultRoute();
-            app.UseWelcomePage();
+            app.UseMvc();
         }
     }
 }
