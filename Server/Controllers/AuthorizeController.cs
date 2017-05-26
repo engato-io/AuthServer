@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Models;
+using Server.Models;
 using WebApp.Business;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.AspNetCore.Authentication;
@@ -14,24 +14,31 @@ using System.Security.Claims;
 using AspNet.Security.OpenIdConnect.Extensions;
 using OpenIddict.Core;
 using Microsoft.Extensions.Options;
+using Server.Models2;
 
 namespace WebApp.Controllers
 {
     public class AuthorizeController : Controller
     {
         readonly TESTContext _context;
+        readonly TESTResourceContext _contextResouce;
         private readonly AppSettings _settings;
 
-        public AuthorizeController(TESTContext context, IOptions<AppSettings> settings)
+        public AuthorizeController(TESTContext context, TESTResourceContext contextResource, IOptions<AppSettings> settings)
         {
             _context = context;
+            _contextResouce = contextResource;
             _settings = settings.Value;
         }
 
         [HttpPost("~/connect/token"), Produces("application/json")]
         public async Task<IActionResult> Exchange(OpenIdConnectRequest request)
         {
+            //How to call AppSettings properties 
             string alfa = _settings.Jwt.Issuer;
+
+            //Testing _contextResource
+            string personId = _contextResouce.Person.SingleOrDefault().Name;
 
             if (request.IsPasswordGrantType())
             {
@@ -84,7 +91,7 @@ namespace WebApp.Controllers
             });
         }
 
-        private async Task<AuthenticationTicket> CreateTicketAsync(OpenIdConnectRequest request, Person User, AuthenticationProperties properties = null)
+        private async Task<AuthenticationTicket> CreateTicketAsync(OpenIdConnectRequest request, Server.Models.Person User, AuthenticationProperties properties = null)
         {
             var identity =
                 new ClaimsIdentity(

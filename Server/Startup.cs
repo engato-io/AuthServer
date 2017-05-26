@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using WebApp.Models;
+using Server.Models;
 using AspNet.Security.OpenIdConnect.Primitives;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
@@ -33,10 +33,13 @@ namespace WebApp
             services.AddOptions();
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
-            services.AddDbContext<Models.TESTContext>(options =>
+            services.AddDbContext<Server.Models.TESTContext>(options =>
             {
                 options.UseSqlServer(Configuration["AppSettings:ConnectionString"]);
                 options.UseOpenIddict();
+            }).AddDbContext<Server.Models2.TESTResourceContext>(options =>
+            {
+                options.UseSqlServer(Configuration["AppSettings:ConnectionString2"]);
             });
 
             services.AddOpenIddict(options =>

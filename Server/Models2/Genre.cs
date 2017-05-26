@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Server.Models
+namespace Server.Models2
 {
-    public partial class Status
+    public partial class Genre
     {
-        public Status()
+        public Genre()
         {
-            Genre = new HashSet<Genre>();
             Person = new HashSet<Person>();
         }
 
-        public int StatusId { get; set; }
+        public int GenreId { get; set; }
         public string Description { get; set; }
+        public int StatusId { get; set; }
 
-        public virtual ICollection<Genre> Genre { get; set; }
         public virtual ICollection<Person> Person { get; set; }
+        public virtual Status Status { get; set; }
     }
 }
