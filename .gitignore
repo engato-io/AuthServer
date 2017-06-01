@@ -261,5 +261,5 @@ __pycache__/
 *.pyc
 
 # AppSettings
-ResourceServer/appsettings.json
-Server/appsettings.json
+/ResourceServer/appsettings.json
+/Server/appsettings.json
